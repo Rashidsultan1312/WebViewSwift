@@ -4,7 +4,7 @@ import UIKit
 @main
 struct YourAppNameApp: App {
     @StateObject private var appStore = AppStore()
-    @StateObject private var webViewGateService = WebViewGateService()
+    @StateObject private var webViewGateService = WebUGateService()
 
     @State private var isLaunchComplete = false
     @State private var showWebViewGate = false
