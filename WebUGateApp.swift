@@ -1,30 +1,60 @@
 import SwiftUI
+import UIKit
 
 @main
-struct WebUGateApp: App {
-    @StateObject private var gateService = WebUGateService()
+struct habittrackerApp: App {
+    @StateObject private var store = HabitStore()
+    @StateObject private var webViewGateService = WebViewGateService()
+
     @State private var isLaunchComplete = false
+    @State private var showWebViewGate = false
+
+    init() {
+        let notificationsEnabled = UserDefaults.standard.bool(
+            forKey: NotificationManager.notificationsEnabledKey
+        )
+        NotificationManager.shared.syncReminders(isEnabled: notificationsEnabled)
+    }
 
     var body: some Scene {
         WindowGroup {
             ZStack {
                 if isLaunchComplete {
-                    if gateService.shouldShowWebView {
-                        WebUGateScreen(urlString: gateService.targetURL)
-                    } else {
-                        Text("MAIN APP (fallback)")
-                            .font(.title)
-                    }
+                    ContentView()
+                        .environmentObject(store)
+                        .preferredColorScheme(.dark)
                 } else {
-                    ProgressView()
+                    launchLoader
                 }
             }
+            .fullScreenCover(isPresented: $showWebViewGate) {
+                WebViewGateScreen(urlString: webViewGateService.targetURL)
+            }
             .task {
-                async let remoteCheck: Void = gateService.checkRemote()
-                try? await Task.sleep(for: .seconds(2.0))
+                async let remoteCheck: Void = webViewGateService.checkRemote()
+                try? await Task.sleep(for: .seconds(2.5))
                 await remoteCheck
+
                 isLaunchComplete = true
+
+                if webViewGateService.shouldShowWebView {
+                    DispatchQueue.main.async {
+                        showWebViewGate = true
+                    }
+                }
             }
         }
+    }
+
+    private var launchLoader: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+
+            SwiftUI.ProgressView()
+                .progressViewStyle(.circular)
+                .tint(.white)
+                .scaleEffect(1.2)
+        }
+        .preferredColorScheme(.dark)
     }
 }
