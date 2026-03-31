@@ -21,7 +21,7 @@ struct WebViewGateScreen: View {
             .ignoresSafeArea()
 
             if isPageLoading {
-                ProgressView()
+                SwiftUI.ProgressView()
                     .progressViewStyle(.circular)
                     .tint(.white)
                     .scaleEffect(1.2)
